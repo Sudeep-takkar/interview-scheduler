@@ -1,46 +1,59 @@
-# Getting Started with Create React App
+# Interview Scheduler
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React TypeScript application for scheduling interviews between candidates and engineers.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Select candidates from a dropdown
+- View weekly calendar (Mon-Fri, 9 AM-6 PM)
+- Filter available slots by engineer
+- Configure interview duration (15, 30, or 60 minutes)
+- View overlapping availability between candidates and engineers
+- Lock scheduled interview slots
+- Confirm interviews with detailed information
 
-### `npm start`
+## Architecture Decisions
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Component Structure
+- **App.tsx**: Main container component managing global state and layout
+- **Components/**
+  - `Calendar.tsx`: Displays weekly calendar with available slots
+  - `CandidateSelect.tsx`: Dropdown for candidate selection
+  - `ConfirmationModal.tsx`: Modal for confirming interview details
+  - `DurationSelect.tsx`: Interview duration selector
+  - `EngineerFilter.tsx`: Filter slots by specific engineer
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### State Management
+- Using React's useState for local state management
+- Centralized interview scheduling logic in App component
+- Prop drilling for component communication
 
-### `npm test`
+### Utils
+- `availability.ts`: Core logic for calculating time slots and checking availability
+- Separate business logic from UI components
+- Pure functions for better testability
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### TypeScript Types
+```typescript
+interface TimeSlot {
+  day: string;
+  startTime: string;
+  endTime: string;
+}
 
-### `npm run build`
+interface Engineer {
+  id: number;
+  name: string;
+  availability: TimeSlot[];
+}
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+interface Candidate {
+  id: number;
+  name: string;
+  preferredTime: TimeSlot;
+}
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+interface InterviewSlot {
+  engineer: Engineer;
+  timeSlot: TimeSlot;
+}
