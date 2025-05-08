@@ -1,67 +1,51 @@
-import { useState } from 'react';
-import { ChakraProvider, Box, Container, Heading, VStack, HStack, useToast } from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
+import { ChakraProvider, Box, Container, Heading, VStack, HStack, useToast, Spinner, Center } from '@chakra-ui/react';
 import { Candidate, Engineer, InterviewSlot } from './types';
+import { fetchEngineers, fetchCandidates } from './services/api';
 import CandidateSelect from './components/CandidateSelect';
 import Calendar from './components/Calendar';
 import ConfirmationModal from './components/ConfirmationModal';
 import DurationSelect from './components/DurationSelect';
 
-const MOCK_ENGINEERS: Engineer[] = [
-  {
-    id: 1,
-    name: "Sudeep Takkar",
-    availability: [
-      { day: "Monday", startTime: "09:00", endTime: "12:00" },
-      { day: "Tuesday", startTime: "14:00", endTime: "17:00" }
-    ]
-  },
-  {
-    id: 2,
-    name: "Saloni Jain",
-    availability: [
-      { day: "Monday", startTime: "13:00", endTime: "18:00" },
-      { day: "Wednesday", startTime: "09:00", endTime: "15:00" }
-    ]
-  },
-  {
-    id: 3,
-    name: "Rahul Kumar",
-    availability: [
-      { day: "Tuesday", startTime: "09:00", endTime: "17:00" },
-      { day: "Thursday", startTime: "13:00", endTime: "18:00" }
-    ]
-  }
-];
-
-const MOCK_CANDIDATES: Candidate[] = [
-  {
-    id: 1,
-    name: "Harry Potter",
-    preferredTime: { day: "Tuesday", startTime: "14:00", endTime: "17:00" }
-  },
-  {
-    id: 2,
-    name: "Salman Khan",
-    preferredTime: { day: "Monday", startTime: "10:00", endTime: "15:00" }
-  },
-  {
-    id: 3,
-    name: "Akshay Kumar",
-    preferredTime: { day: "Wednesday", startTime: "09:00", endTime: "15:00" }
-  }, {
-    id: 4,
-    name: "Sudeep Takkar",
-    preferredTime: { day: "Tuesday", startTime: "14:00", endTime: "17:00" }
-  }
-];
-
 function App() {
+  const [engineers, setEngineers] = useState<Engineer[]>([]);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<InterviewSlot | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [scheduledInterviews, setScheduledInterviews] = useState<InterviewSlot[]>([]);
   const [duration, setDuration] = useState<15 | 30 | 60>(30);
   const toast = useToast();
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [engineersData, candidatesData] = await Promise.all([
+          fetchEngineers(),
+          fetchCandidates()
+        ]);
+        
+        setEngineers(engineersData);
+        setCandidates(candidatesData);
+      } catch (err) {
+        setError('Failed to load data. Please try again later.');
+        toast({
+          title: 'Error',
+          description: 'Failed to load data',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [toast]);
 
   const handleSlotSelect = (slot: InterviewSlot) => {
     setSelectedSlot({
@@ -84,7 +68,6 @@ function App() {
 
   const handleConfirmInterview = () => {
     if (selectedSlot && selectedCandidate) {
-      // Add the interview to scheduled interviews
       setScheduledInterviews([
         ...scheduledInterviews,
         {
@@ -105,6 +88,29 @@ function App() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <ChakraProvider>
+        <Center minH="100vh">
+          <VStack spacing={4}>
+            <Spinner size="xl" />
+            <Heading size="md">Loading...</Heading>
+          </VStack>
+        </Center>
+      </ChakraProvider>
+    );
+  }
+
+  if (error) {
+    return (
+      <ChakraProvider>
+        <Center minH="100vh">
+          <Heading size="md" color="red.500">{error}</Heading>
+        </Center>
+      </ChakraProvider>
+    );
+  }
+
   return (
     <ChakraProvider>
       <Box minH="100vh" bg="gray.50">
@@ -117,7 +123,7 @@ function App() {
             <Box bg="white" p={6} borderRadius="lg" boxShadow="base">
               <HStack spacing={4}>
                 <CandidateSelect
-                  candidates={MOCK_CANDIDATES}
+                  candidates={candidates}
                   selectedCandidate={selectedCandidate}
                   onSelect={setSelectedCandidate}
                 />
@@ -130,7 +136,7 @@ function App() {
             
             <Box bg="white" p={6} borderRadius="lg" boxShadow="base">
               <Calendar
-                engineers={MOCK_ENGINEERS}
+                engineers={engineers}
                 selectedCandidate={selectedCandidate}
                 onSlotSelect={handleSlotSelect}
                 scheduledInterviews={scheduledInterviews}

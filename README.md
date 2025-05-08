@@ -57,3 +57,51 @@ interface InterviewSlot {
   engineer: Engineer;
   timeSlot: TimeSlot;
 }
+```
+
+## Testing
+
+### Running Tests
+
+```bash
+
+# Run availability tests specifically
+npm test availability
+
+```
+
+### Test Coverage
+
+Key areas tested:
+
+1. **Availability Calculations**
+   - Time slot validation
+   - Interview duration calculations
+   - Schedule conflict detection
+   - Engineer availability checks
+   - Candidate preference matching
+
+2. **Component Tests**
+   - Calendar rendering
+   - Slot selection
+   - Duration changes
+   - Engineer filtering
+
+### Test Structure
+
+```typescript
+// Availability Logic Tests
+describe('Availability Calculations', () => {
+  test('Time slot calculations')
+  test('Schedule conflict detection')
+  test('24-hour time handling')
+  test('Duration-based availability')
+});
+
+// Component Integration Tests
+describe('Calendar Integration', () => {
+  test('Slot selection with duration')
+  test('Engineer availability filtering')
+  test('Scheduled interview locking')
+});
+```
